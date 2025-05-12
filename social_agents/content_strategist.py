@@ -47,7 +47,7 @@ class ContentStrategistAgent:
                     "role":
                     "system",
                     "content":
-                    "You are a helpful content strategist. You will generate a brief for a social media post based on the user's input. You will also include relevant resources."
+                    "You are a helpful content strategist. You will generate a brief for a social media post based on the user's input that include links to YouTube videos, articles, or tutorials. You will use the provided resources to create a compelling brief."
                 },
                 {
                     "role": "user",
