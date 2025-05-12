@@ -1,24 +1,55 @@
 import os
 import openai
-
+from link_discovery import discover_links
 
 class ContentStrategistAgent:
 
-    def __init__(self, model="gpt-4o"):
+    def __init__(self, model: str = "gpt-4o"):
         openai.api_key = os.getenv("OPENAI_API_KEY")
         self.model = model
 
-    def run(self, prompt):
+    def extract_topic(self, prompt: str, max_words: int = 5) -> str:
+        """
+        Extracts a concise topic from the user's prompt by taking the first few words.
+        """
+        words = prompt.strip().split()
+        # Use at most max_words words for the search query
+        return " ".join(words[:max_words])
+
+    def run(self, prompt: str):
+        """
+        Generates a strategy brief that includes auto-discovered links & images.
+        Uses only the key topic words for news discovery, not the full prompt.
+        """
+        # Step 1: Extract a concise topic for link discovery
+        topic = self.extract_topic(prompt)
+
+        # Step 2: Discover related articles based on the extracted topic
+        try:
+            articles = discover_links(topic)
+        except Exception:
+            articles = []
+
+        # Build a simple brief string including resource URLs
+        brief = prompt
+        for a in articles:
+            title = a.get("title", "")
+            url = a.get("url", "")
+            if url:
+                brief += f"\n\nResource: {title} – {url}"
+
+        # Step 3: Call the LLM with the enriched prompt
         response = openai.ChatCompletion.create(
             model=self.model,
-            messages=[{
-                "role":
-                "system",
-                "content":
-                "Analyze and reframe prompts into structured content briefs."
-            }, {
-                "role": "user",
-                "content": prompt
-            }],
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful content strategist."
+                },
+                {
+                    "role": "user",
+                    "content": brief
+                },
+            ],
         )
-        return response.choices[0].message.content.strip()
+        return response.choices[0].message.content.strip(), articles
