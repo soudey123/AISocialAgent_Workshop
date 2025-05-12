@@ -5,7 +5,6 @@ import openai
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import streamlit.components.v1 as components
-import requests
 
 from social_agents.content_strategist import ContentStrategistAgent
 from social_agents.linkedin_agent import LinkedInAgent
@@ -42,7 +41,6 @@ st.set_page_config(page_title="AI Social Media Content Generator",
 
 # Initialize session state
 st.session_state.setdefault('generated_posts', {})
-st.session_state.setdefault('articles', [])
 st.session_state.setdefault('log_results', {})
 st.session_state.setdefault('generated', False)
 
@@ -73,22 +71,11 @@ if generate_btn:
         st.session_state.generated = True
         st.session_state.generated_posts.clear()
         st.session_state.log_results.clear()
-        st.session_state.articles.clear()
 
         # Get brief + discovered resources
         with st.spinner("🧠 Generating content..."):
             strategist = ContentStrategistAgent()
             brief, articles = strategist.run(prompt)
-            st.session_state.articles = articles
-
-        # Display links & images
-        if articles:
-            st.markdown("### 🔗 Resources")
-            for a in articles:
-                if a.get("url"):
-                    st.markdown(f"- [{a.get('title')}]({a.get('url')})")
-                if a.get("urlToImage"):
-                    st.image(a.get("urlToImage"), use_column_width=True)
 
         # Generate platform posts
         for platform, chk in [("LinkedIn", linkedin_chk),
