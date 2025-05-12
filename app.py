@@ -33,10 +33,18 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Streamlit configuration
 st.set_page_config(page_title="AI Social Media Content Generator", layout="wide")
 
+# Initialize session state
+if 'generated_posts' not in st.session_state:
+    st.session_state.generated_posts = {}
+if 'log_results' not in st.session_state:
+    st.session_state.log_results = {}
+if 'generated' not in st.session_state:
+    st.session_state.generated = False
+
 # Sidebar for input
 with st.sidebar:
     st.title("🎯 Content Prompt")
-    prompt = st.text_area("What's your idea?", key="prompt", height=150)
+    st.text_area("What's your idea?", key="user_prompt", height=150)
     st.markdown("**Choose Platforms**")
     linkedin_chk = st.checkbox("LinkedIn")
     twitter_chk = st.checkbox("Twitter")
@@ -48,50 +56,64 @@ with st.sidebar:
 st.markdown("<h1 style='text-align: center;'>📣 AI Social Media Content Generator</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'>Create tailored posts for different platforms using AI agents</p>", unsafe_allow_html=True)
 
-# Determine selected platforms
-selected = []
-for name, chk in [("LinkedIn", linkedin_chk), ("Twitter", twitter_chk),
-                  ("Instagram", instagram_chk), ("Facebook", facebook_chk)]:
-    if chk:
-        selected.append(name)
+# Read prompt from session
+prompt = st.session_state.get("user_prompt", "")
 
-# Generate and display content
+# Show prompt if generated
+if st.session_state.generated:
+    st.markdown(f"**Your prompt:** {prompt}")
+
+# Determine selected platforms
+selected = [name for name, chk in [
+    ("LinkedIn", linkedin_chk),
+    ("Twitter", twitter_chk),
+    ("Instagram", instagram_chk),
+    ("Facebook", facebook_chk),
+] if chk]
+
+# Generate and store content
 if generate:
     if prompt and selected:
+        st.session_state.generated = True
+        st.session_state.generated_posts.clear()
+        st.session_state.log_results.clear()
         with st.spinner("🧠 Generating brief..."):
             strategist = ContentStrategistAgent()
             brief = strategist.run(prompt)
-
         for platform in selected:
             with st.spinner(f"✍️ Creating content for {platform}..."):
-                agent_map = {
+                agent = {
                     "LinkedIn": LinkedInAgent(),
                     "Twitter": TwitterAgent(),
                     "Instagram": InstagramAgent(),
                     "Facebook": FacebookAgent()
-                }
-                agent = agent_map[platform]
+                }[platform]
                 post = agent.run(brief)
-
-                # Display in colored box with readable text color
-                st.markdown(f"### 🎯 {platform}")
-                st.markdown(
-                    f"<div style='background-color:#e0f7fa; color:#000000; padding:15px; border-radius:8px; line-height:1.5;'>{post}</div>",
-                    unsafe_allow_html=True
-                )
-
-                # Log to Airtable
-                if log_to_airtable(prompt, platform, post):
-                    st.caption(f"✅ Logged to Airtable ({platform})")
-                else:
-                    st.caption(f"⚠️ Airtable log failed ({platform})")
-
-        # Celebrate with balloons and confetti
-        st.balloons()
-        components.html(
-            "<script src='https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js'></script>"
-            "<script>confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }});</script>",
-            height=0,
-        )
+                st.session_state.generated_posts[platform] = post
+                success = log_to_airtable(prompt, platform, post)
+                st.session_state.log_results[platform] = success
     else:
         st.warning("Enter an idea and select at least one platform.")
+
+# Display generated posts and log status
+if st.session_state.generated:
+    for platform, post in st.session_state.generated_posts.items():
+        st.markdown(f"### 🎯 {platform}")
+        # Content box
+        st.markdown(
+            f"<div style='background-color:#e0f7fa; color:#000000; padding:15px; border-radius:8px; line-height:1.5;'>{post}</div>",
+            unsafe_allow_html=True
+        )
+        # Airtable log status
+        success = st.session_state.log_results.get(platform, False)
+        if success:
+            st.markdown(f"<p style='color: #28a745;'>✅ Logged to Airtable ({platform})</p>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<p style='color: #e5534b;'>⚠️ Failed to log {platform} content to Airtable</p>", unsafe_allow_html=True)
+    # Celebrate
+    st.balloons()
+    components.html(
+        "<script src='https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js'></script>"
+        "<script>confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }});</script>",
+        height=0,
+    )
