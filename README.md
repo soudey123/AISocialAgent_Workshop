@@ -49,6 +49,7 @@ ai-social-agent/
 ├── app.py
 ├── requirements.txt
 ├── .env.example
+├── link_discovery.py
 ├── social_agents/
 │   ├── content_strategist.py
 │   ├── linkedin_agent.py
