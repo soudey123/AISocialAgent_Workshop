@@ -2,6 +2,7 @@ import os
 import openai
 from link_discovery import discover_links
 
+
 class ContentStrategistAgent:
 
     def __init__(self, model: str = "gpt-4o"):
@@ -10,7 +11,7 @@ class ContentStrategistAgent:
 
     def extract_topic(self, prompt: str, max_words: int = 5) -> str:
         """
-        Extracts a concise topic from the user's prompt by taking the first few words.
+        Extracts a concise topic from the user's prompt.
         """
         words = prompt.strip().split()
         # Use at most max_words words for the search query
@@ -43,8 +44,10 @@ class ContentStrategistAgent:
             model=self.model,
             messages=[
                 {
-                    "role": "system",
-                    "content": "You are a helpful content strategist."
+                    "role":
+                    "system",
+                    "content":
+                    "You are a helpful content strategist. You will generate a brief for a social media post based on the user's input. You will also include relevant resources."
                 },
                 {
                     "role": "user",

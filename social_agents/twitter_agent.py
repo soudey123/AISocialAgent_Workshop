@@ -13,7 +13,7 @@ class TwitterAgent:
             model=self.model,
             messages=[{
                 "role": "system",
-                "content": "You write concise Twitter posts (max 280)."
+                "content": "You write concise Twitter posts (max 280). Use emojis and hashtags where appropriate."
             }, {
                 "role": "user",
                 "content": f"Create a tweet from this brief: {brief}"

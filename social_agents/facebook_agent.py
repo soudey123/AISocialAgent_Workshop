@@ -9,7 +9,7 @@ class FacebookAgent:
     def run(self, brief):
         response = openai.ChatCompletion.create(
             model=self.model,
-            messages=[{"role":"system","content":"You write Facebook posts."},
+            messages=[{"role":"system","content":"You write Facebook posts. You use emojis and hashtags. You are concise and engaging."},
                       {"role":"user","content":f"Create a Facebook post from this brief: {brief}"}],
         )
         return response.choices[0].message.content.strip()

@@ -13,7 +13,7 @@ class LinkedInAgent:
             model=self.model,
             messages=[{
                 "role": "system",
-                "content": "You write LinkedIn posts."
+                "content": "You write LinkedIn posts. You are concise and professional. You use bullet points where appropriate."
             }, {
                 "role":
                 "user",

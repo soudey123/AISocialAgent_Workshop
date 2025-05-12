@@ -13,7 +13,7 @@ class InstagramAgent:
             model=self.model,
             messages=[{
                 "role": "system",
-                "content": "You write Instagram captions."
+                "content": "You write Instagram captions. You are concise and engaging. You use relevant hashtags."
             }, {
                 "role":
                 "user",
