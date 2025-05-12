@@ -13,7 +13,7 @@ A Streamlit app that uses OpenAI agents to transform a single prompt into platfo
    ```
    https://github.com/soudey123/AISocialAgent_Workshop
    ```
-2. **Log in** to [Replit](https://replit.com) and click **Create** → **Import from GitHub**.  
+2. **Log in** to [Replit](https://replit.com) and click **Create App** → **Import from GitHub**.  
 3. **Enter** your repo URL and **Import**.  
 4. In the Replit **Shell**, run:
    ```bash
